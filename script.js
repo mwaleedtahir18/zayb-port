@@ -24,8 +24,10 @@ addEventListener('resize',init);init();
 if(document.fonts){document.fonts.ready.then(fit);document.fonts.load('900 300px Montserrat').then(fit,function(){})}
 var cl=function(v){return Math.min(1,Math.max(0,v))};
 var stg=document.querySelector('.stage'),tg=document.getElementById('tg'),spot=document.getElementById('spot'),ab=document.getElementById('about'),wk=document.getElementById('work'),scu=document.getElementById('sc'),mini=document.getElementById('mini'),ml=[].slice.call(mini.querySelectorAll('div a')),bar=document.getElementById('bar'),TOT=1,WK=1e9,LG=1e9,lv2=-1,FH=700,lce=-1,NAB=0,NWK=0,t2=document.getElementById('t2img'),lY=-1,lW=-1,lv=-1,lc=[],P=0,S=1,mx=0,my=0,ox=0,oy=0;
-// fallback if images/ folder was omitted or flattened on deploy
-document.addEventListener('error',function(e){var el=e.target;if(!el||el.tagName!=='IMG'||el.dataset.fb)return;var s=el.getAttribute('src');if(!s||/^data:|^https?:/.test(s))return;el.dataset.fb='1';el.src=/^(\.\/)?images\//.test(s)?s.replace(/^(\.\/)?images\//,''):'images/'+s.replace(/^\.\//,'')},true);
+// fallback if images/ folder was omitted or flattened on deploy (handles both already-failed and lazy imgs)
+function fixImg(el){if(!el||el.tagName!=='IMG'||el.dataset.fb)return;var s=el.getAttribute('src');if(!s||/^data:|^https?:/.test(s))return;el.dataset.fb='1';el.src=/^(\.\/)?images\//.test(s)?s.replace(/^(\.\/)?images\//,''):'images/'+s.replace(/^\.\//,'')}
+document.addEventListener('error',function(e){fixImg(e.target)},true);
+document.querySelectorAll('img').forEach(function(el){if(el.complete&&el.naturalWidth===0&&el.getAttribute('src'))fixImg(el)});
 var fine=matchMedia('(pointer:fine)').matches&&!matchMedia('(prefers-reduced-motion:reduce)').matches;
 addEventListener('pointermove',function(e){if(e.pointerType==='mouse'){mx=e.clientX/innerWidth-.5;my=e.clientY/innerHeight-.5}});
 // hero 3D pose: scroll zoom + a mouse tilt that fades out as the zoom begins
@@ -51,13 +53,13 @@ if(sc||(mv&&P<.06))pose();
 requestAnimationFrame(loop)})();
 new IntersectionObserver(function(e){if(e[0].isIntersecting)it.classList.add('in')},{threshold:.2}).observe(it);
 // page height for the progress bar
-function tt(){TOT=document.documentElement.scrollHeight-innerHeight;WK=wk.getBoundingClientRect().top+scrollY;NAB=document.querySelector('.marq').getBoundingClientRect().bottom+scrollY;NWK=NAB+ab.offsetHeight;FH=document.querySelector('.rvl>footer').offsetHeight;lce=-1;LG=document.querySelector('.rvl').getBoundingClientRect().top+scrollY;wk.style.setProperty('--wh',wk.offsetHeight+'px');lv2=-1;lY=-1;ab.style.setProperty('--ah',ab.offsetHeight+'px')}
+function tt(){TOT=document.documentElement.scrollHeight-innerHeight;NAB=document.querySelector('.marq').getBoundingClientRect().bottom+scrollY;NWK=NAB+ab.offsetHeight;WK=NWK;FH=document.querySelector('.rvl>footer').offsetHeight;lce=-1;LG=NWK+wk.offsetHeight;wk.style.setProperty('--wh',wk.offsetHeight+'px');lv2=-1;lY=-1;ab.style.setProperty('--ah',ab.offsetHeight+'px')}
 addEventListener('resize',tt);addEventListener('load',tt);tt();if(document.fonts)document.fonts.ready.then(tt);
 // scroll reveals (one-time, observer based, so no per-frame cost)
 function cnt(box){box.querySelectorAll('b').forEach(function(b){var raw=b.textContent,n=parseInt(raw,10),sf=raw.replace(/[0-9]/g,''),t0=null;
 function st(t){if(t0===null)t0=t;var k=Math.min(1,(t-t0)/1400),e=1-Math.pow(1-k,3);b.textContent=Math.round(n*e)+sf;if(k<1)requestAnimationFrame(st)}
 b.textContent='0'+sf;requestAnimationFrame(st)})}
-var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('vis');io.unobserve(e.target);if(e.target.classList.contains('stats'))cnt(e.target);if(e.target.classList.contains('about'))e.target.querySelector('.photo').classList.add('vis')}})},{threshold:.15,rootMargin:'0px 0px -6% 0px'});
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('vis');io.unobserve(e.target);if(e.target.classList.contains('stats'))cnt(e.target);if(e.target.classList.contains('about'))e.target.querySelector('.photo').classList.add('vis')}})},{threshold:.05,rootMargin:'0px 0px -2% 0px'});
 document.querySelectorAll('.about .tx>*,.stats>div,.langs>div,.wi,footer p').forEach(function(n){n.classList.add('rv');n.style.setProperty('--d',(Array.prototype.indexOf.call(n.parentNode.children,n)*.1)+'s')});
 document.querySelectorAll('.card').forEach(function(c,i){c.style.setProperty('--d',((i%3)*.12)+'s')});
 document.querySelectorAll('.rv,.hd,.about,.stats').forEach(function(n){io.observe(n)});
